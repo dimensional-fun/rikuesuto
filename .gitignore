@@ -1,0 +1,10 @@
+dist/
+node_modules/
+tests/
+
+yarn.lock
+yarn-error.log
+tsconfig.buildinfo
+package-lock.json
+pnpm-lock.*
+*.env
