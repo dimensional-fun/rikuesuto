@@ -2,10 +2,10 @@ node_modules/
 src/
 tests/
 
-readme.md
+README.md
 .eslintrc.json
 .gitignore
 tsconfig.json
 yarn.lock
 yarn-error.log
-
+LICENSE
