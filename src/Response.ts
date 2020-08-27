@@ -1,4 +1,5 @@
 import { IncomingHttpHeaders, IncomingMessage, STATUS_CODES } from "http";
+import { Blob } from "./util";
 
 import type { Request } from "./Request";
 
@@ -63,6 +64,14 @@ export class Response<T> {
    */
   public get buffer(): Buffer {
     return this._buf;
+  }
+
+  /**
+   * Get the blob representation of the response.
+   */
+  public get blob(): Blob {
+    const type = this.headers["content-type"] ?? "";
+    return new Blob([this._buf], type);
   }
 
   /**

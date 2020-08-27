@@ -2,8 +2,9 @@ import * as http from "http";
 import * as https from "https";
 import * as zlib from "zlib";
 import { URL, URLSearchParams } from "url";
-import { defaultRequestOptions, HttpError, Method, TimeoutError } from "./util";
+import { Blob, defaultRequestOptions, HttpError, TimeoutError } from "./util";
 import { Response } from "./Response";
+import { RIKUESUTO_USER_AGENT, Method } from "./Client";
 
 import type { AbortController, AbortSignal } from "abort-controller";
 import type FormData_ from "form-data";
@@ -67,7 +68,7 @@ export class Request<T = unknown> {
     this.url = new URL(url.toString());
     this.redirects = 0;
 
-    this._method = options.method! ?? Method.GET;
+    this._method = options.method! ?? "get";
     this._body = options.body;
     this._options = options;
     this._headers = options.headers ?? {}
@@ -209,7 +210,7 @@ export class Request<T = unknown> {
    */
   public exec(): Promise<Response<T>> {
     if (!this._headers["User-Agent"]) {
-      this._headers["User-Agent"] = "@melike2d/https"
+      this._headers["User-Agent"] = RIKUESUTO_USER_AGENT;
     }
 
     if (!this._headers["Content-Type"] && this._body) {
@@ -221,7 +222,7 @@ export class Request<T = unknown> {
       if (contentType) this.set("content-type", contentType);
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       const request = (this.url.protocol === "https:" ? https : http).request;
       const req = request({
         hostname: this.url.hostname,
@@ -304,8 +305,13 @@ export class Request<T = unknown> {
       }
 
       if (this._body) {
-        if (this._body instanceof Object) req.write(JSON.stringify(this._body));
-        else req.write(this._body);
+        let _body = this._body;
+
+        if (this._body instanceof Object) _body = JSON.stringify(this._body);
+        if (this._body instanceof Blob) _body = this._body.data()
+        if (_body instanceof Promise) _body = await _body;
+
+        req.write(_body);
       }
 
       req.end();

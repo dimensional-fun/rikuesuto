@@ -2,6 +2,8 @@ node_modules/
 src/
 tests/
 
+readme.md
+.eslintrc.json
 .gitignore
 tsconfig.json
 yarn.lock
