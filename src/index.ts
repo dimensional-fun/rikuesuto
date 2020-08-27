@@ -1,5 +1,3 @@
-import { Rikuesuto } from "./Client";
-
 export * from "./util/TimeoutError";
 export * from "./util/HttpError";
 export * from "./util/Blob";

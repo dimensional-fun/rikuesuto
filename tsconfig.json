@@ -17,7 +17,6 @@
     "allowJs": true,
     "rootDir": "./src",
     "outDir": "./dist",
-    "removeComments": true,
 
     /* Strict Options */
     "strict": true,

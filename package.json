@@ -1,7 +1,7 @@
 {
   "name": "rikuesuto",
   "description": "A simple node.js http client.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "types": "index.d.ts",
   "license": "MIT",
