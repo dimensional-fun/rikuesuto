@@ -1,7 +1,8 @@
-import type * as https from "https";
-import type * as http from "http";
-import type { Readable } from "stream";
 import type { URL, URLSearchParams } from "url";
+import type { Readable } from "stream";
+import type * as http from "http";
+import type { IncomingHttpHeaders, IncomingMessage } from "http";
+import type * as https from "https";
 import type { AbortController } from "abort-controller";
 import type { EventEmitter } from "events";
 
@@ -22,7 +23,6 @@ export class HttpError extends Error {
    * The status code.
    */
   readonly statusCode: number;
-
   /**
    * The URL, if any.
    */
@@ -71,7 +71,7 @@ export class Blob {
    * The contents of this blob as text.
    */
   text(): Promise<string>;
-  
+
   /**
    * The contents of the blob as binary data contained in an array buffer.
    */
@@ -80,14 +80,11 @@ export class Blob {
 
 type BlobParts = (ArrayBufferLike | ArrayBufferView | Blob | Buffer | string)[];
 
-export const defaultRequestOptions: RequestData;
-
 export class Request<T = unknown> {
   /**
    * The URL to request.
    */
   url: URL;
-
   /**
    * The redirect count.
    * @private
@@ -134,7 +131,6 @@ export class Request<T = unknown> {
    * @param obj The query object.
    */
   query(obj: NodeJS.Dict<string | string[]> | URLSearchParams): this;
-
   /**
    * Set an individual query parameter.
    * @param key The query parameter.
@@ -153,7 +149,6 @@ export class Request<T = unknown> {
    * @param headers The headers to set.
    */
   set(headers: NodeJS.Dict<string>): this;
-
   /**
    * Set an individual header for this request.
    * @param header The header to set.
@@ -176,7 +171,7 @@ export class Request<T = unknown> {
    * Executes this request.
    */
   exec(): Promise<Response<T>>;
-  
+
   /**
    * Executes the request.
    * @param onExecuted
@@ -203,42 +198,34 @@ export interface RequestData {
    * The headers to use.
    */
   headers?: NodeJS.Dict<string>;
-
   /**
    * The request method.
    */
   method?: Method;
-
   /**
    * The request query.
    */
   query?: NodeJS.Dict<string | string[]> | URLSearchParams;
-
   /**
    * The request body.
    */
   body?: unknown;
-
   /**
    * The request timeout.
    */
   timeout?: number;
-
   /**
    * Toggles the ability to follow redirects, or you can limit them.
    */
   follow?: boolean | number;
-
   /**
    * Whether or not to compress the data.
    */
   compressData?: boolean;
-
   /**
    * The http(s) agent.
    */
   agent?: http.Agent | https.Agent;
-
   /**
    * The abort controller.
    */
@@ -249,8 +236,7 @@ export class Response<T> {
   /**
    * The message.
    */
-  readonly message: http.IncomingMessage;
-
+  readonly message: IncomingMessage;
   /**
    * The request.
    */
@@ -260,17 +246,27 @@ export class Response<T> {
    * @param request
    * @param message
    */
-  constructor(request: Request, message: http.IncomingMessage);
+  constructor(request: Request, message: IncomingMessage);
 
   /**
    * The headers of this response.
    */
-  get headers(): http.IncomingHttpHeaders;
+  get headers(): IncomingHttpHeaders;
 
   /**
    * The status code of this response.
    */
   get statusCode(): number;
+
+  /**
+   * The status text of the response.
+   */
+  get statusText(): string;
+
+  /**
+   * Whether this response was ok and not an error.
+   */
+  get ok(): boolean;
 
   /**
    * The status of this response.
@@ -293,32 +289,30 @@ export class Response<T> {
   get blob(): Blob;
 
   /**
+   * @private
+   */
+  _chunk(data: Uint8Array): Response<T>;
+
+  /**
    * Gets the response as text.
    * @param encoding The encoding.
    */
   text(encoding?: BufferEncoding): string;
 }
 
-export const RIKUESUTO_METHODS: Method[];
-
-export const RIKUESUTO_USER_AGENT: string;
-
 export class Rikuesuto extends EventEmitter {
   /**
    * The default request data.
    */
   defaults: RequestData;
-
   /**
    * The user agent for all requests.
    */
   userAgent: string;
-
   /**
    * The base url for all requests.
    */
   baseUrl?: URL;
-
   /**
    * The total number of requests since this instance of instantiated .
    */
@@ -336,13 +330,13 @@ export class Rikuesuto extends EventEmitter {
    */
   make<T>(url: string | URL, options?: RequestData): Request<T>;
 
-    /**
+  /**
    * Creates a new post request.
    * @param path The url path.
    * @param options The request options
    */
   post<T = unknown>(path: string, options?: RequestData): Promise<Response<T>>;
-  
+
   /**
    * Creates a new get request.
    * @param path The url path.
@@ -393,18 +387,11 @@ export class Rikuesuto extends EventEmitter {
   trace<T = unknown>(path: string, options?: RequestData): Promise<Response<T>>;
 }
 
-export type Method =
-  | "post"
-  | "get"
-  | "delete"
-  | "patch"
-  | "put"
-  | "options"
-  | "connect"
-  | "trace";
+export type Method = "post" | "get" | "delete" | "patch" | "put" | "options" | "connect" | "trace";
 
 export interface RikuesutoOptions {
   userAgent?: string;
   defaults?: RequestData;
   baseUrl?: string;
 }
+

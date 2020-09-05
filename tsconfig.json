@@ -5,14 +5,14 @@
   ],
   "compilerOptions": {
     /* Basic */
-    "lib": ["ES2020"],
-    "target": "ES2020",
+    "lib": ["esnext"],
+    "target": "esnext",
     "module": "CommonJS",
     "skipLibCheck": true,
 
     /* Compiling */
     "incremental": false,
-    "inlineSourceMap": true,
+    "inlineSourceMap": false,
     "declaration": false,
     "allowJs": true,
     "rootDir": "./src",

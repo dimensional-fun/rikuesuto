@@ -44,6 +44,20 @@ export class Response<T> {
   }
 
   /**
+   * The status text of the response.
+   */
+  public get statusText(): string {
+    return this.message.statusMessage ?? this.status;
+  }
+
+  /**
+   * Whether this response was ok and not an error.
+   */
+  public get ok(): boolean {
+    return this.statusCode <= 200 && this.statusCode < 300;
+  } 
+
+  /**
    * The status of this response.
    */
   public get status(): string {
