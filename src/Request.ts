@@ -2,11 +2,10 @@ import * as http from "http";
 import * as https from "https";
 import * as zlib from "zlib";
 import { URL, URLSearchParams } from "url";
-import { Blob, defaultRequestOptions, HttpError, TimeoutError } from "./util";
+import { Blob, defaultRequestOptions, fromRawHeaders, Headers, HeadersInit, HttpError, TimeoutError } from "./util";
 import { Response } from "./Response";
-import { RIKUESUTO_USER_AGENT, Method } from "./Client";
+import { Method, RIKUESUTO_USER_AGENT } from "./Client";
 
-import type { AbortController, AbortSignal } from "abort-controller";
 import type FormData_ from "form-data";
 
 const isObject = (data: unknown): data is object => typeof data === 'object';
@@ -41,16 +40,16 @@ export class Request<T = unknown> {
   private _body: unknown;
 
   /**
-   * The headers for this request.
-   * @private
-   */
-  private _headers: NodeJS.Dict<string>;
-
-  /**
    * The abort controller signal.
    * @private
    */
-  private _signal?: AbortSignal
+  private _signal?: AbortSignal;
+
+  /**
+   * The headers for this request.
+   * @private
+   */
+  private readonly _headers: Headers;
 
   /**
    * The options provided to this request.
@@ -71,8 +70,8 @@ export class Request<T = unknown> {
     this._method = options.method! ?? "get";
     this._body = options.body;
     this._options = options;
-    this._headers = options.headers ?? {}
-    this._signal = options.signal?.signal;
+    this._headers = new Headers(options.headers ?? {})
+    this._signal = options.signal;
 
     if (options.query) {
       for (const [ k, v ] of Object.entries(options.query)) {
@@ -119,8 +118,8 @@ export class Request<T = unknown> {
    * Sets the abort signal for this request.
    * @param signal
    */
-  public signal(signal: AbortController): this {
-    this._signal = signal.signal;
+  public signal(signal: AbortSignal): this {
+    this._signal = signal;
     return this;
   }
 
@@ -175,11 +174,14 @@ export class Request<T = unknown> {
   public set(a: NodeJS.Dict<string> | string, b?: string): this {
     if (typeof a === "string") {
       if (!b) throw new Error(`You must provide a value for header "${a}"`);
-      this._headers[a] = b;
+      this._headers.append(a, b);
       return this;
     }
 
-    this._headers = Object.assign(this._headers, a);
+    for (const [ k, v ] of Object.entries(a)) {
+      this._headers.append(k, v as string);
+    }
+
     return this;
   }
 
@@ -209,11 +211,11 @@ export class Request<T = unknown> {
    * Executes this request.
    */
   public exec(): Promise<Response<T>> {
-    if (!this._headers["User-Agent"]) {
-      this._headers["User-Agent"] = RIKUESUTO_USER_AGENT;
+    if (!this._headers.get("user-agent")) {
+      this._headers.set("user-agent", RIKUESUTO_USER_AGENT);
     }
 
-    if (!this._headers["Content-Type"] && this._body) {
+    if (!this._headers.get("content-type") && this._body) {
       let contentType
 
       if (FormData && this._body instanceof FormData) contentType = this._body.getHeaders()["content-type"];
@@ -235,7 +237,7 @@ export class Request<T = unknown> {
         href: this.url.href,
         searchParams: this.url.searchParams,
         search: this.url.search,
-        headers: this._headers,
+        headers: this._headers.raw(),
         protocol: this.url.protocol,
         agent: this._options.agent
       });
@@ -247,7 +249,10 @@ export class Request<T = unknown> {
 
       const aborted = (): void => {
         finalize()
-        return reject(new Error("Signal was aborted."));
+
+        const error = new Error("Signal was aborted.")
+        error.name = "AbortError";
+        return reject(error);
       }
 
       if (this._signal) {
@@ -262,9 +267,10 @@ export class Request<T = unknown> {
           if (encoding === "deflate") resp.pipe(zlib.createDeflate());
         }
 
-        if (resp.headers.location && this._options.follow) {
+        const headers = fromRawHeaders(resp.rawHeaders)
+        if (headers.get("Location") && this._options.follow) {
           if (this.redirects !== this._options.follow) {
-            const req = new Request<T>(new URL(resp.headers.location, this.url), {
+            const req = new Request<T>(new URL(headers.get("Location") as string, this.url), {
               ...this._options,
               headers: this._headers,
               body: this._body
@@ -351,7 +357,7 @@ export interface RequestData {
   /**
    * The headers to use.
    */
-  headers?: NodeJS.Dict<string>;
+  headers?: HeadersInit;
 
   /**
    * The request method.
@@ -391,5 +397,11 @@ export interface RequestData {
   /**
    * The abort controller.
    */
-  signal?: AbortController;
+  signal?: AbortSignal;
+}
+
+export type AbortSignal = {
+  readonly aborted: boolean;
+  addEventListener(type: "abort", listener: (this: AbortSignal) => void): void;
+  removeEventListener(type: "abort", listener: (this: AbortSignal) => void): void;
 }

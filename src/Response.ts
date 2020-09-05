@@ -1,5 +1,5 @@
-import { IncomingHttpHeaders, IncomingMessage, STATUS_CODES } from "http";
-import { Blob } from "./util";
+import { IncomingMessage, STATUS_CODES } from "http";
+import { Blob, fromRawHeaders, Headers } from "./util";
 
 import type { Request } from "./Request";
 
@@ -15,6 +15,11 @@ export class Response<T> {
   public readonly request: Request;
 
   /**
+   * The received headers.
+   */
+  public readonly headers: Headers
+
+  /**
    * @private
    */
   private _buf: Buffer;
@@ -26,14 +31,8 @@ export class Response<T> {
   public constructor(request: Request, message: IncomingMessage) {
     this.request = request;
     this.message = message;
+    this.headers = fromRawHeaders(message.rawHeaders);
     this._buf = Buffer.alloc(0);
-  }
-
-  /**
-   * The headers of this response.
-   */
-  public get headers(): IncomingHttpHeaders {
-    return this.message.headers;
   }
 
   /**
@@ -55,7 +54,7 @@ export class Response<T> {
    */
   public get ok(): boolean {
     return this.statusCode <= 200 && this.statusCode < 300;
-  } 
+  }
 
   /**
    * The status of this response.
@@ -68,7 +67,7 @@ export class Response<T> {
    * Parses the content as json.
    */
   public get json(): T | null {
-    return this.message.statusCode !== 204 && this.headers["content-type"] === "application/json"
+    return this.message.statusCode !== 204 && this.headers.get("content-type") === "application/json"
       ? JSON.parse(this.text()!)
       : null;
   }
@@ -84,8 +83,8 @@ export class Response<T> {
    * Get the blob representation of the response.
    */
   public get blob(): Blob {
-    const type = this.headers["content-type"] ?? "";
-    return new Blob([this._buf], type);
+    const type = this.headers.get("content-type") ?? "";
+    return new Blob([ this._buf ], type);
   }
 
   /**

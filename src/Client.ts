@@ -67,7 +67,9 @@ export class Rikuesuto extends EventEmitter {
     const req = new Request<T>(url, options);
     this._debug(`#${this.requests} request: ${req.methodType.toUpperCase()} to ${url}.`);
 
-    return this.userAgent ? req.set("user-agent", this.userAgent) : req;
+    return this.userAgent
+      ? req.set("user-agent", this.userAgent)
+      : req;
   }
 
   /**
