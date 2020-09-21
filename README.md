@@ -9,9 +9,13 @@
 
 ## Installation and Usage
 
+**node.js version 12** or newer is required.
+
 ```shell script
 yarn add rikuesuto
 ```
+
+> P.S. when working with form-data make sure to install [`form-data`](https://npmjs.com/form-data).
 
 **JSON Response**: 
 

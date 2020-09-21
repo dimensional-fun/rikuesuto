@@ -5,8 +5,8 @@
   ],
   "compilerOptions": {
     /* Basic */
-    "lib": ["esnext"],
-    "target": "esnext",
+    "lib": ["es2019"],
+    "target": "es2019",
     "module": "CommonJS",
     "skipLibCheck": true,
 
