@@ -213,7 +213,7 @@ export interface RequestData {
   /**
    * The request query.
    */
-  query?: NodeJS.Dict<string | string[]> | URLSearchParams;
+  query?: NodeJS.Dict<unknown | unknown[]> | URLSearchParams;
   /**
    * The request body.
    */
@@ -345,7 +345,11 @@ export class Rikuesuto extends EventEmitter {
    * @param options The options.
    */
   make<T>(url: string | URL, options?: RequestData): Request<T>;
+}
 
+export type Method = "post" | "get" | "delete" | "patch" | "put" | "options" | "connect" | "trace";
+
+export interface Rikuesuto {
   /**
    * Creates a new post request.
    * @param path The url path.
@@ -402,8 +406,6 @@ export class Rikuesuto extends EventEmitter {
    */
   trace<T = unknown>(path: string, options?: RequestData): Promise<Response<T>>;
 }
-
-export type Method = "post" | "get" | "delete" | "patch" | "put" | "options" | "connect" | "trace";
 
 export interface RikuesutoOptions {
   userAgent?: string;

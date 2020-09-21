@@ -6,11 +6,9 @@ import { Blob, defaultRequestOptions, fromRawHeaders, Headers, HeadersInit, Http
 import { Response } from "./Response";
 import { Method, RIKUESUTO_USER_AGENT } from "./Client";
 
-import type FormData_ from "form-data";
-
 const isObject = (data: unknown): data is object => typeof data === 'object';
 
-let FormData: typeof FormData_ | undefined;
+let FormData: typeof import("form-data") | undefined;
 try {
   FormData = require("form-data");
 } catch (e) {
@@ -367,7 +365,7 @@ export interface RequestData {
   /**
    * The request query.
    */
-  query?: NodeJS.Dict<string | string[]> | URLSearchParams;
+  query?: NodeJS.Dict<unknown | unknown[]> | URLSearchParams;
 
   /**
    * The request body.
